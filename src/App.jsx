@@ -1,5 +1,4 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { useEffect, useState } from "react";
 
 import Homepage from "./pages/Homepage";
 import Product from "./pages/Product";
