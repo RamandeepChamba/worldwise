@@ -1,21 +1,33 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import styles from "./Map.module.css";
-import { MapContainer, Marker, TileLayer, Popup } from "react-leaflet";
+import { MapContainer, Marker, TileLayer, Popup, useMap } from "react-leaflet";
 import markerIconPng from "leaflet/dist/images/marker-icon.png";
 import { Icon } from "leaflet";
+import { useEffect, useState } from "react";
+import { useCities } from "../contexts/CitiesContext";
 
 function Map() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
+
+  const [mapPosition, setMapPosition] = useState([40, 0]);
+  const { cities } = useCities();
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const lat = searchParams.get("lat");
-  const lng = searchParams.get("lng");
+  const mapLat = searchParams.get("lat");
+  const mapLng = searchParams.get("lng");
+
+  useEffect(
+    function () {
+      if (mapLat && mapLng) setMapPosition([mapLat, mapLng]);
+    },
+    [mapLat, mapLng]
+  );
 
   return (
     <div className={styles.mapContainer}>
       <MapContainer
-        center={[51.505, -0.09]}
-        zoom={13}
+        center={mapPosition}
+        zoom={6}
         scrollWheelZoom={true}
         className={styles.map}
       >
@@ -23,23 +35,34 @@ function Map() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
         />
-        <Marker
-          position={[51.505, -0.09]}
-          icon={
-            new Icon({
-              iconUrl: markerIconPng,
-              iconSize: [25, 41],
-              iconAnchor: [12, 41],
-            })
-          }
-        >
-          <Popup>
-            A pretty CSS3 popup. <br /> Easily customizable.
-          </Popup>
-        </Marker>
+
+        {cities.map((city) => (
+          <Marker
+            position={[city.position.lat, city.position.lng]}
+            icon={
+              new Icon({
+                iconUrl: markerIconPng,
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+              })
+            }
+            key={city.id}
+          >
+            <Popup>
+              <span>{city.emoji}</span> <span>{city.cityName}</span>
+            </Popup>
+          </Marker>
+        ))}
+        <CenterMap position={mapPosition} />
       </MapContainer>
     </div>
   );
+}
+
+function CenterMap({ position }) {
+  const map = useMap();
+  map.setView(position);
+  return null;
 }
 
 export default Map;
